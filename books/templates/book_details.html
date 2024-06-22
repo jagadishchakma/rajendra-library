@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %} Book Details  Page {% endblock %}
+
+{% block body %}
+<div class="container">
+    <div style="width: 50%; margin:auto">
+        <h1>{{details.title}}</h1>
+        <img src="{{details.image.url}}" alt="">
+        <p>{{details.description}}</p>
+        <strong>Price: ${{details.price}}</strong>
+        {% if user.is_authenticated %}
+            {% if user.account.balance < details.price and is_borrowed == False %}
+            <a href="" class="btn btn-outline-warning disabled">Insufficient Balance</a>
+            {% elif is_borrowed == False %}
+            <a href="{% url 'book_borrow' details.id %}" class="btn btn-outline-warning">Borrow Book</a>
+            {% else %}
+            <a href="" class="btn btn-outline-warning disabled">Already Borrowed</a>
+            {% endif %}
+        {% endif %}
+
+        <div class="mt-4 mb-4">
+            {% for category in details.categories.all%}
+                <a href="#" class="badge badge-primary">{{category}}</a>
+            {% endfor%}
+        </div>
+        
+    </div>
+    <hr>
+    <div class="review">
+       
+        <div class="row">
+            {% if is_borrowed %}
+            <div class="col-md-6">
+                <p><strong>Write reveiws: </strong></p>
+                <form method="post">
+                    {% csrf_token %}
+                    <!-- {{ form | crispy}} -->
+                    {% for frm in form %}
+                        {{frm}}
+                        {{frm.errors}}
+                    {% endfor %}
+                    <input type="submit" value="Submit" class="btn btn-outline-info mt-3">
+                </form>
+            </div>
+            {% endif %}
+            <div class="{% if is_borrowed %}col-md-6{% else %}col-12{% endif %}">
+                {% if reviews %}
+                    <h4>All Reviews:{{reviews|length}} </h4>
+                    {% for review in reviews %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                            <h5 class="card-title">{{review.name}}</h5>
+                            <p class="card-text">{{review.body}}</p>
+                            <p class="card-text"><small class="text-muted">{{review.created_on}}</small></p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
